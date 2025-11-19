@@ -1,9 +1,52 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+type PlayerWithRelations = {
+  id: string
+  name: string
+  nickname: string | null
+  buyIns: {
+    amount: number
+    sessionId: string
+    session: { date: Date }
+  }[]
+  cashOuts: {
+    amount: number
+    sessionId: string
+    session: { date: Date }
+  }[]
+  sessions: {
+    sessionId: string
+    session: { date: Date }
+  }[]
+}
+
+type SessionStat = {
+  sessionId: string
+  date: Date
+  profit: number
+}
+
+type PlayerStatSummary = {
+  player: {
+    id: string
+    name: string
+    nickname: string | null
+  }
+  totalBuyIns: number
+  totalCashOuts: number
+  profit: number
+  sessionsCount: number
+  winningSessions: number
+  losingSessions: number
+  breakevenSessions: number
+  winRate: number
+  sessionStats: SessionStat[]
+}
+
 export async function GET() {
   try {
-    const players = await prisma.player.findMany({
+    const players = (await prisma.player.findMany({
       include: {
         buyIns: {
           include: {
@@ -21,16 +64,19 @@ export async function GET() {
           },
         },
       },
-    })
+    })) as PlayerWithRelations[]
 
-    const stats = players.map((player) => {
+    const stats: PlayerStatSummary[] = players.map((player) => {
       const totalBuyIns = player.buyIns.reduce((sum, bi) => sum + bi.amount, 0)
-      const totalCashOuts = player.cashOuts.reduce((sum, co) => sum + co.amount, 0)
+      const totalCashOuts = player.cashOuts.reduce(
+        (sum, co) => sum + co.amount,
+        0
+      )
       const profit = totalCashOuts - totalBuyIns
       const sessionsCount = player.sessions.length
 
       // Статистика по сессиям
-      const sessionStats = player.sessions.map((sp) => {
+      const sessionStats: SessionStat[] = player.sessions.map((sp) => {
         const sessionBuyIns = player.buyIns
           .filter((bi) => bi.sessionId === sp.sessionId)
           .reduce((sum, bi) => sum + bi.amount, 0)
