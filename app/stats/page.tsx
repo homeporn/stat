@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { safeJsonFetch } from '@/lib/api'
 
 interface Player {
   id: string
@@ -36,8 +37,7 @@ export default function StatsPage() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/stats')
-      const data = await response.json()
+      const data = await safeJsonFetch<Stat[]>('/api/stats')
       setStats(data)
     } catch (error) {
       console.error('Failed to fetch stats:', error)

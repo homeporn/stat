@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { safeJsonFetch } from '@/lib/api'
 
 interface Player {
   id: string
@@ -57,8 +58,7 @@ export default function SessionsPage() {
 
   const fetchSessions = async () => {
     try {
-      const response = await fetch('/api/sessions')
-      const data = await response.json()
+      const data = await safeJsonFetch<Session[]>('/api/sessions')
       setSessions(data)
     } catch (error) {
       console.error('Failed to fetch sessions:', error)
@@ -69,8 +69,7 @@ export default function SessionsPage() {
 
   const fetchPlayers = async () => {
     try {
-      const response = await fetch('/api/players')
-      const data = await response.json()
+      const data = await safeJsonFetch<Player[]>('/api/players')
       setPlayers(data)
     } catch (error) {
       console.error('Failed to fetch players:', error)
