@@ -1,4 +1,3 @@
-// @ts-ignore - Prisma 7 uses different import path
 import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = globalThis as unknown as {
