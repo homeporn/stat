@@ -7,7 +7,7 @@
 - **Next.js 16** (App Router)
 - **TypeScript**
 - **Tailwind CSS**
-- **Prisma**
+- **better-sqlite3** (прямая работа с SQLite)
 - **SQLite**
 
 ## Функциональность
@@ -25,12 +25,7 @@
 npm install
 ```
 
-2. Настройте базу данных:
-
-```bash
-npx prisma migrate dev
-npx prisma generate
-```
+2. База данных создается автоматически при первом запуске
 
 3. Запустите сервер разработки:
 
@@ -43,8 +38,7 @@ npm run dev
 ## Структура проекта
 
 - `app/` - страницы и API routes Next.js
-- `lib/` - утилиты (Prisma Client)
-- `prisma/` - схема базы данных и миграции
+- `lib/` - утилиты (работа с БД через better-sqlite3)
 
 ## Использование
 

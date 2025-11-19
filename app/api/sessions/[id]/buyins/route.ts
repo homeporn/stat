@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { db, generateId, type BuyIn } from '@/lib/db'
 
 export async function POST(
   request: NextRequest,
@@ -24,24 +24,34 @@ export async function POST(
       )
     }
 
-    const buyIn = await prisma.buyIn.create({
-      data: {
-        sessionId: id,
-        playerId,
-        amount: parseFloat(amount),
-      },
-      include: {
-        player: true,
-      },
-    })
+    const buyInId = generateId()
+    const now = new Date().toISOString()
 
-    return NextResponse.json(buyIn, { status: 201 })
+    db.prepare(`
+      INSERT INTO buy_ins (id, sessionId, playerId, amount, createdAt)
+      VALUES (?, ?, ?, ?, ?)
+    `).run(buyInId, id, playerId, parseFloat(amount), now)
+
+    const buyIn = db.prepare(`
+      SELECT bi.*, p.name as player_name, p.nickname as player_nickname
+      FROM buy_ins bi
+      JOIN players p ON bi.playerId = p.id
+      WHERE bi.id = ?
+    `).get(buyInId) as BuyIn & { player_name: string; player_nickname: string | null }
+
+    return NextResponse.json({
+      ...buyIn,
+      player: {
+        id: buyIn.playerId,
+        name: buyIn.player_name,
+        nickname: buyIn.player_nickname,
+      },
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creating buy-in:', error)
     return NextResponse.json(
-      { error: 'Failed to create buy-in' },
+      { error: 'Failed to create buy-in', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
 }
-

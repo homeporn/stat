@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { db, generateId, type CashOut } from '@/lib/db'
 
 export async function POST(
   request: NextRequest,
@@ -24,24 +24,34 @@ export async function POST(
       )
     }
 
-    const cashOut = await prisma.cashOut.create({
-      data: {
-        sessionId: id,
-        playerId,
-        amount: parseFloat(amount),
-      },
-      include: {
-        player: true,
-      },
-    })
+    const cashOutId = generateId()
+    const now = new Date().toISOString()
 
-    return NextResponse.json(cashOut, { status: 201 })
+    db.prepare(`
+      INSERT INTO cash_outs (id, sessionId, playerId, amount, createdAt)
+      VALUES (?, ?, ?, ?, ?)
+    `).run(cashOutId, id, playerId, parseFloat(amount), now)
+
+    const cashOut = db.prepare(`
+      SELECT co.*, p.name as player_name, p.nickname as player_nickname
+      FROM cash_outs co
+      JOIN players p ON co.playerId = p.id
+      WHERE co.id = ?
+    `).get(cashOutId) as CashOut & { player_name: string; player_nickname: string | null }
+
+    return NextResponse.json({
+      ...cashOut,
+      player: {
+        id: cashOut.playerId,
+        name: cashOut.player_name,
+        nickname: cashOut.player_nickname,
+      },
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creating cash-out:', error)
     return NextResponse.json(
-      { error: 'Failed to create cash-out' },
+      { error: 'Failed to create cash-out', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
 }
-

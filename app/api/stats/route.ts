@@ -1,94 +1,48 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-
-type PlayerWithRelations = {
-  id: string
-  name: string
-  nickname: string | null
-  buyIns: {
-    amount: number
-    sessionId: string
-    session: { date: Date }
-  }[]
-  cashOuts: {
-    amount: number
-    sessionId: string
-    session: { date: Date }
-  }[]
-  sessions: {
-    sessionId: string
-    session: { date: Date }
-  }[]
-}
-
-type SessionStat = {
-  sessionId: string
-  date: Date
-  profit: number
-}
-
-type PlayerStatSummary = {
-  player: {
-    id: string
-    name: string
-    nickname: string | null
-  }
-  totalBuyIns: number
-  totalCashOuts: number
-  profit: number
-  sessionsCount: number
-  winningSessions: number
-  losingSessions: number
-  breakevenSessions: number
-  winRate: number
-  sessionStats: SessionStat[]
-}
+import { db, type Player } from '@/lib/db'
 
 export async function GET() {
   try {
-    const players = (await prisma.player.findMany({
-      include: {
-        buyIns: {
-          include: {
-            session: true,
-          },
-        },
-        cashOuts: {
-          include: {
-            session: true,
-          },
-        },
-        sessions: {
-          include: {
-            session: true,
-          },
-        },
-      },
-    })) as PlayerWithRelations[]
+    const players = db.prepare('SELECT * FROM players').all() as Player[]
 
-    const stats: PlayerStatSummary[] = players.map((player) => {
-      const totalBuyIns = player.buyIns.reduce((sum, bi) => sum + bi.amount, 0)
-      const totalCashOuts = player.cashOuts.reduce(
-        (sum, co) => sum + co.amount,
-        0
-      )
+    const stats = players.map((player) => {
+      // Get total buy-ins
+      const buyInsResult = db.prepare(`
+        SELECT SUM(amount) as total FROM buy_ins WHERE playerId = ?
+      `).get(player.id) as { total: number | null }
+      const totalBuyIns = buyInsResult.total || 0
+
+      // Get total cash-outs
+      const cashOutsResult = db.prepare(`
+        SELECT SUM(amount) as total FROM cash_outs WHERE playerId = ?
+      `).get(player.id) as { total: number | null }
+      const totalCashOuts = cashOutsResult.total || 0
+
       const profit = totalCashOuts - totalBuyIns
-      const sessionsCount = player.sessions.length
 
-      // Статистика по сессиям
-      const sessionStats: SessionStat[] = player.sessions.map((sp) => {
-        const sessionBuyIns = player.buyIns
-          .filter((bi) => bi.sessionId === sp.sessionId)
-          .reduce((sum, bi) => sum + bi.amount, 0)
-        const sessionCashOuts = player.cashOuts
-          .filter((co) => co.sessionId === sp.sessionId)
-          .reduce((sum, co) => sum + co.amount, 0)
-        return {
-          sessionId: sp.sessionId,
-          date: sp.session.date,
-          profit: sessionCashOuts - sessionBuyIns,
-        }
-      })
+      // Get sessions count
+      const sessionsResult = db.prepare(`
+        SELECT COUNT(DISTINCT sessionId) as count FROM session_players WHERE playerId = ?
+      `).get(player.id) as { count: number }
+      const sessionsCount = sessionsResult.count || 0
+
+      // Get session stats
+      const sessionStats = db.prepare(`
+        SELECT 
+          s.id as sessionId,
+          s.date,
+          COALESCE(SUM(co.amount), 0) - COALESCE(SUM(bi.amount), 0) as profit
+        FROM session_players sp
+        JOIN sessions s ON sp.sessionId = s.id
+        LEFT JOIN buy_ins bi ON bi.sessionId = s.id AND bi.playerId = ?
+        LEFT JOIN cash_outs co ON co.sessionId = s.id AND co.playerId = ?
+        WHERE sp.playerId = ?
+        GROUP BY s.id, s.date
+      `).all(player.id, player.id, player.id) as Array<{
+        sessionId: string
+        date: string
+        profit: number
+      }>
 
       const winningSessions = sessionStats.filter((s) => s.profit > 0).length
       const losingSessions = sessionStats.filter((s) => s.profit < 0).length
@@ -112,16 +66,15 @@ export async function GET() {
       }
     })
 
-    // Сортируем по прибыли (от большего к меньшему)
+    // Sort by profit (descending)
     stats.sort((a, b) => b.profit - a.profit)
 
     return NextResponse.json(stats)
   } catch (error) {
     console.error('Error fetching stats:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch statistics' },
+      { error: 'Failed to fetch statistics', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
 }
-

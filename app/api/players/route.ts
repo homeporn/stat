@@ -1,26 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { db, generateId, type Player } from '@/lib/db'
 
 export async function GET() {
   try {
-    const players = await prisma.player.findMany({
-      orderBy: { name: 'asc' },
-    })
+    const players = db.prepare(`
+      SELECT * FROM players 
+      ORDER BY name ASC
+    `).all() as Player[]
+    
     return NextResponse.json(players)
   } catch (error) {
     console.error('Error fetching players:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    const errorStack = error instanceof Error ? error.stack : undefined
-    console.error('Error details:', {
-      message: errorMessage,
-      stack: errorStack,
-      name: error instanceof Error ? error.name : undefined,
-    })
     return NextResponse.json(
       { 
         error: 'Failed to fetch players', 
         details: errorMessage,
-        ...(process.env.NODE_ENV === 'development' && { stack: errorStack })
       },
       { status: 500 }
     )
@@ -39,12 +34,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const player = await prisma.player.create({
-      data: {
-        name: name.trim(),
-        nickname: nickname?.trim() || null,
-      },
-    })
+    const id = generateId()
+    const now = new Date().toISOString()
+
+    db.prepare(`
+      INSERT INTO players (id, name, nickname, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?)
+    `).run(id, name.trim(), nickname?.trim() || null, now, now)
+
+    const player = db.prepare('SELECT * FROM players WHERE id = ?').get(id) as Player
 
     return NextResponse.json(player, { status: 201 })
   } catch (error) {
@@ -55,4 +53,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

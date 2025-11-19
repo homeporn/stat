@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { db } from '@/lib/db'
 
 export async function DELETE(
   request: NextRequest,
@@ -7,16 +7,14 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    await prisma.cashOut.delete({
-      where: { id },
-    })
+    db.prepare('DELETE FROM cash_outs WHERE id = ?').run(id)
 
     return NextResponse.json({ success: true })
   } catch (error) {
+    console.error('Error deleting cash-out:', error)
     return NextResponse.json(
-      { error: 'Failed to delete cash-out' },
+      { error: 'Failed to delete cash-out', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
 }
-
