@@ -9,8 +9,19 @@ export async function GET() {
     return NextResponse.json(players)
   } catch (error) {
     console.error('Error fetching players:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
+    console.error('Error details:', {
+      message: errorMessage,
+      stack: errorStack,
+      name: error instanceof Error ? error.name : undefined,
+    })
     return NextResponse.json(
-      { error: 'Failed to fetch players', details: error instanceof Error ? error.message : 'Unknown error' },
+      { 
+        error: 'Failed to fetch players', 
+        details: errorMessage,
+        ...(process.env.NODE_ENV === 'development' && { stack: errorStack })
+      },
       { status: 500 }
     )
   }
