@@ -26,27 +26,49 @@ export async function GET() {
       `).get(player.id) as { count: number }
       const sessionsCount = sessionsResult.count || 0
 
-      // Get session stats
+      // Get session stats - правильный расчет для каждой сессии отдельно
       const sessionStats = db.prepare(`
-        SELECT 
-          s.id as sessionId,
-          s.date,
-          COALESCE(SUM(co.amount), 0) - COALESCE(SUM(bi.amount), 0) as profit
+        SELECT DISTINCT s.id as sessionId, s.date
         FROM session_players sp
         JOIN sessions s ON sp.sessionId = s.id
-        LEFT JOIN buy_ins bi ON bi.sessionId = s.id AND bi.playerId = ?
-        LEFT JOIN cash_outs co ON co.sessionId = s.id AND co.playerId = ?
         WHERE sp.playerId = ?
-        GROUP BY s.id, s.date
-      `).all(player.id, player.id, player.id) as Array<{
+        ORDER BY s.date DESC
+      `).all(player.id) as Array<{
         sessionId: string
         date: string
-        profit: number
       }>
 
-      const winningSessions = sessionStats.filter((s) => s.profit > 0).length
-      const losingSessions = sessionStats.filter((s) => s.profit < 0).length
-      const breakevenSessions = sessionStats.filter((s) => s.profit === 0).length
+      // Для каждой сессии считаем прибыль отдельно
+      const sessionStatsWithProfit = sessionStats.map(session => {
+        const buyInsResult = db.prepare(`
+          SELECT COALESCE(SUM(amount), 0) as total 
+          FROM buy_ins 
+          WHERE sessionId = ? AND playerId = ?
+        `).get(session.sessionId, player.id) as { total: number }
+        const buyIns = buyInsResult.total || 0
+
+        const cashOutsResult = db.prepare(`
+          SELECT COALESCE(SUM(amount), 0) as total 
+          FROM cash_outs 
+          WHERE sessionId = ? AND playerId = ?
+        `).get(session.sessionId, player.id) as { total: number }
+        const cashOuts = cashOutsResult.total || 0
+
+        return {
+          sessionId: session.sessionId,
+          date: session.date,
+          profit: cashOuts - buyIns,
+          buyIns,
+          cashOuts,
+        }
+      })
+
+      const winningSessions = sessionStatsWithProfit.filter((s) => s.profit > 0).length
+      const losingSessions = sessionStatsWithProfit.filter((s) => s.profit < 0).length
+      const breakevenSessions = sessionStatsWithProfit.filter((s) => s.profit === 0).length
+
+      // Винрейт = процент сессий с положительной прибылью
+      const winRate = sessionsCount > 0 ? (winningSessions / sessionsCount) * 100 : 0
 
       return {
         player: {
@@ -61,8 +83,8 @@ export async function GET() {
         winningSessions,
         losingSessions,
         breakevenSessions,
-        winRate: sessionsCount > 0 ? (winningSessions / sessionsCount) * 100 : 0,
-        sessionStats,
+        winRate,
+        sessionStats: sessionStatsWithProfit,
       }
     })
 

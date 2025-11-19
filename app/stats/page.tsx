@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { safeJsonFetch } from '@/lib/api'
+import { BackButton } from '@/components/BackButton'
 
 interface Player {
   id: string
@@ -175,28 +176,28 @@ export default function StatsPage() {
         </div>
       )}
 
-      <div className="mt-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h2 className="text-lg font-semibold mb-4">Общая статистика</h2>
+      <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Общая статистика</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>
-            <div className="text-sm text-gray-500">Всего игроков</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.length}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Всего игроков</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.length}</div>
           </div>
           <div>
-            <div className="text-sm text-gray-500">Всего сессий</div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-sm text-gray-500 dark:text-gray-400">Всего сессий</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {stats.reduce((sum, s) => sum + s.sessionsCount, 0)}
             </div>
           </div>
           <div>
-            <div className="text-sm text-gray-500">Общая сумма вложений</div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-sm text-gray-500 dark:text-gray-400">Общая сумма вложений</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {stats.reduce((sum, s) => sum + s.totalBuyIns, 0).toFixed(2)} ₽
             </div>
           </div>
           <div>
-            <div className="text-sm text-gray-500">Общая сумма выведено</div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-sm text-gray-500 dark:text-gray-400">Общая сумма выведено</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {stats.reduce((sum, s) => sum + s.totalCashOuts, 0).toFixed(2)} ₽
             </div>
           </div>

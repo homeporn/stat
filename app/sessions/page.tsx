@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { safeJsonFetch } from '@/lib/api'
+import { BackButton } from '@/components/BackButton'
 
 interface Player {
   id: string
@@ -271,8 +272,11 @@ export default function SessionsPage() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
+      <div className="mb-4">
+        <BackButton />
+      </div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Игровые сессии</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Игровые сессии</h1>
         <button
           onClick={() => {
             setShowForm(!showForm)
@@ -567,23 +571,43 @@ export default function SessionsPage() {
               </div>
 
               <div>
-                <h3 className="font-semibold mb-3">Итоги по игрокам</h3>
+                <h3 className="font-semibold mb-3 text-gray-900 dark:text-gray-100">Итоги по игрокам (Банкролл)</h3>
                 <div className="space-y-2">
                   {selectedSession.players.map((sp) => {
                     const profit = calculateProfit(selectedSession, sp.player.id)
+                    const buyIns = selectedSession.buyIns
+                      .filter((bi) => bi.player.id === sp.player.id)
+                      .reduce((sum, bi) => sum + bi.amount, 0)
+                    const cashOuts = selectedSession.cashOuts
+                      .filter((co) => co.player.id === sp.player.id)
+                      .reduce((sum, co) => sum + co.amount, 0)
                     return (
                       <div
                         key={sp.player.id}
-                        className={`p-2 rounded ${
-                          profit > 0 ? 'bg-green-50' : profit < 0 ? 'bg-red-50' : 'bg-gray-50'
+                        className={`p-3 rounded ${
+                          profit > 0 
+                            ? 'bg-green-50 dark:bg-green-900/20' 
+                            : profit < 0 
+                              ? 'bg-red-50 dark:bg-red-900/20' 
+                              : 'bg-gray-50 dark:bg-gray-700'
                         }`}
                       >
-                        <div className="flex justify-between">
-                          <span className="font-medium">{sp.player.name}</span>
-                          <span className={profit > 0 ? 'text-green-600' : profit < 0 ? 'text-red-600' : 'text-gray-600'}>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{sp.player.name}</span>
+                          <span className={`font-semibold ${
+                            profit > 0 
+                              ? 'text-green-600 dark:text-green-400' 
+                              : profit < 0 
+                                ? 'text-red-600 dark:text-red-400' 
+                                : 'text-gray-600 dark:text-gray-400'
+                          }`}>
                             {profit > 0 ? '+' : ''}
                             {profit.toFixed(2)} ₽
                           </span>
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 flex justify-between">
+                          <span>Бай-ины: {buyIns.toFixed(2)} ₽</span>
+                          <span>Кэшауты: {cashOuts.toFixed(2)} ₽</span>
                         </div>
                       </div>
                     )
