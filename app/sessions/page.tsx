@@ -294,13 +294,13 @@ export default function SessionsPage() {
       </div>
 
       {showForm && (
-        <div className="mb-6 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-xl font-semibold mb-4">
+        <div className="mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
             {editingSession ? 'Редактировать сессию' : 'Новая сессия'}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Дата *
               </label>
               <input
@@ -308,12 +308,12 @@ export default function SessionsPage() {
                 id="date"
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 required
               />
             </div>
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Описание
               </label>
               <input
@@ -321,16 +321,16 @@ export default function SessionsPage() {
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Игроки *
               </label>
-              <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-lg p-3">
+              <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-700">
                 {players.map((player) => (
-                  <label key={player.id} className="flex items-center">
+                  <label key={player.id} className="flex items-center text-gray-900 dark:text-gray-100">
                     <input
                       type="checkbox"
                       checked={formData.playerIds.includes(player.id)}
@@ -374,7 +374,7 @@ export default function SessionsPage() {
                     playerIds: [],
                   })
                 }}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
               >
                 Отмена
               </button>
@@ -385,20 +385,20 @@ export default function SessionsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
-          <h2 className="text-xl font-semibold mb-4">Список сессий</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Список сессий</h2>
           {sessions.length === 0 ? (
-            <div className="bg-white p-12 rounded-lg shadow-sm border border-gray-200 text-center">
-              <p className="text-gray-600">Пока нет сессий. Создайте первую сессию!</p>
+            <div className="bg-white dark:bg-gray-800 p-12 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+              <p className="text-gray-600 dark:text-gray-400">Пока нет сессий. Создайте первую сессию!</p>
             </div>
           ) : (
             <div className="space-y-3">
               {sessions.map((session) => (
                 <div
                   key={session.id}
-                  className={`bg-white p-4 rounded-lg shadow-sm border cursor-pointer transition-colors ${
+                  className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border cursor-pointer transition-colors ${
                     selectedSession?.id === session.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                   onClick={() => {
                     setSelectedSession(session)
@@ -407,13 +407,13 @@ export default function SessionsPage() {
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <div className="font-semibold text-gray-900">
+                      <div className="font-semibold text-gray-900 dark:text-gray-100">
                         {new Date(session.date).toLocaleDateString('ru-RU')}
                       </div>
                       {session.description && (
-                        <div className="text-sm text-gray-600 mt-1">{session.description}</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{session.description}</div>
                       )}
-                      <div className="text-sm text-gray-500 mt-1">
+                      <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         Игроков: {session.players.length}
                       </div>
                     </div>
@@ -423,7 +423,7 @@ export default function SessionsPage() {
                           e.stopPropagation()
                           handleEdit(session)
                         }}
-                        className="text-blue-600 hover:text-blue-900 text-sm"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-sm"
                       >
                         Редактировать
                       </button>
@@ -432,7 +432,7 @@ export default function SessionsPage() {
                           e.stopPropagation()
                           handleDelete(session.id)
                         }}
-                        className="text-red-600 hover:text-red-900 text-sm"
+                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm"
                       >
                         Удалить
                       </button>
@@ -445,29 +445,29 @@ export default function SessionsPage() {
         </div>
 
         {selectedSession && (
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h2 className="text-xl font-semibold mb-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
               Сессия {new Date(selectedSession.date).toLocaleDateString('ru-RU')}
             </h2>
             {selectedSession.description && (
-              <p className="text-gray-600 mb-4">{selectedSession.description}</p>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">{selectedSession.description}</p>
             )}
 
             <div className="space-y-6">
               <div>
-                <h3 className="font-semibold mb-3">Бай-ины</h3>
+                <h3 className="font-semibold mb-3 text-gray-900 dark:text-gray-100">Бай-ины</h3>
                 <div className="space-y-2 mb-3">
                   {selectedSession.buyIns.map((buyIn) => (
                     <div
                       key={buyIn.id}
-                      className="flex justify-between items-center p-2 bg-gray-50 rounded"
+                      className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded"
                     >
-                      <span>
+                      <span className="text-gray-900 dark:text-gray-100">
                         {buyIn.player.name}: {buyIn.amount.toFixed(2)} ₽
                       </span>
                       <button
                         onClick={() => handleDeleteBuyIn(buyIn.id, selectedSession.id)}
-                        className="text-red-600 hover:text-red-900 text-sm"
+                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm"
                       >
                         Удалить
                       </button>
@@ -477,7 +477,7 @@ export default function SessionsPage() {
                 <div className="flex gap-2">
                   <select
                     id="buyInPlayer"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     defaultValue=""
                   >
                     <option value="">Выберите игрока</option>
@@ -493,7 +493,7 @@ export default function SessionsPage() {
                     placeholder="Сумма"
                     step="0.01"
                     min="0"
-                    className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   />
                   <button
                     onClick={() => {
@@ -513,19 +513,19 @@ export default function SessionsPage() {
               </div>
 
               <div>
-                <h3 className="font-semibold mb-3">Кэшауты</h3>
+                <h3 className="font-semibold mb-3 text-gray-900 dark:text-gray-100">Кэшауты</h3>
                 <div className="space-y-2 mb-3">
                   {selectedSession.cashOuts.map((cashOut) => (
                     <div
                       key={cashOut.id}
-                      className="flex justify-between items-center p-2 bg-gray-50 rounded"
+                      className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded"
                     >
-                      <span>
+                      <span className="text-gray-900 dark:text-gray-100">
                         {cashOut.player.name}: {cashOut.amount.toFixed(2)} ₽
                       </span>
                       <button
                         onClick={() => handleDeleteCashOut(cashOut.id, selectedSession.id)}
-                        className="text-red-600 hover:text-red-900 text-sm"
+                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm"
                       >
                         Удалить
                       </button>
@@ -535,7 +535,7 @@ export default function SessionsPage() {
                 <div className="flex gap-2">
                   <select
                     id="cashOutPlayer"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     defaultValue=""
                   >
                     <option value="">Выберите игрока</option>
@@ -551,7 +551,7 @@ export default function SessionsPage() {
                     placeholder="Сумма"
                     step="0.01"
                     min="0"
-                    className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   />
                   <button
                     onClick={() => {
