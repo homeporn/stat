@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { safeJsonFetch } from '@/lib/api'
 import { BackButton } from '@/components/BackButton'
+import { useTheme } from '@/components/ThemeProvider'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
 interface PlayerBankroll {
@@ -24,9 +25,17 @@ interface GameData {
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16']
 
 export default function GamesStatsPage() {
+  const { theme } = useTheme()
   const [gamesData, setGamesData] = useState<GameData[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedGame, setSelectedGame] = useState<string | null>(null)
+  
+  const isDark = theme === 'dark'
+  const gridColor = isDark ? '#374151' : '#e5e7eb'
+  const axisColor = isDark ? '#9ca3af' : '#6b7280'
+  const tooltipBg = isDark ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)'
+  const tooltipBorder = isDark ? '#4b5563' : '#e5e7eb'
+  const tooltipText = isDark ? '#f3f4f6' : '#111827'
 
   useEffect(() => {
     fetchGamesStats()
@@ -194,17 +203,18 @@ export default function GamesStatsPage() {
               </h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={barChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="name" stroke="#6b7280" />
-                  <YAxis stroke="#6b7280" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                  <XAxis dataKey="name" stroke={axisColor} tick={{ fill: axisColor }} />
+                  <YAxis stroke={axisColor} tick={{ fill: axisColor }} />
                   <Tooltip 
                     contentStyle={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px'
+                      backgroundColor: tooltipBg,
+                      border: `1px solid ${tooltipBorder}`,
+                      borderRadius: '8px',
+                      color: tooltipText
                     }}
                   />
-                  <Legend />
+                  <Legend wrapperStyle={{ color: isDark ? '#f3f4f6' : '#111827' }} />
                   <Bar dataKey="bankroll" fill="#3b82f6" name="Банкролл" />
                 </BarChart>
               </ResponsiveContainer>
@@ -223,7 +233,7 @@ export default function GamesStatsPage() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }: { name: string; percent?: number }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name ?? 'Unknown'}: ${((percent ?? 0) * 100).toFixed(0)}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -235,9 +245,10 @@ export default function GamesStatsPage() {
                     <Tooltip 
                       formatter={(value: number) => `${value.toFixed(2)} ₽`}
                       contentStyle={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px'
+                        backgroundColor: tooltipBg,
+                        border: `1px solid ${tooltipBorder}`,
+                        borderRadius: '8px',
+                        color: tooltipText
                       }}
                     />
                   </PieChart>

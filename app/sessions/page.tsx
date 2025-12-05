@@ -265,7 +265,7 @@ export default function SessionsPage() {
   if (loading) {
     return (
       <div className="px-4 sm:px-6 lg:px-8">
-        <div className="text-center py-12">Загрузка...</div>
+        <div className="text-center py-12 text-gray-900 dark:text-gray-100">Загрузка...</div>
       </div>
     )
   }

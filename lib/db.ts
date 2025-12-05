@@ -1,7 +1,8 @@
 import Database from 'better-sqlite3'
 import { nanoid } from 'nanoid'
 
-const DEFAULT_DB_PATH = './dev.db'
+// Для Railway используем /data, для локальной разработки - ./dev.db
+const DEFAULT_DB_PATH = process.env.NODE_ENV === 'production' ? '/data/dev.db' : './dev.db'
 
 const globalForDb = globalThis as unknown as {
   db: Database.Database | undefined
@@ -35,6 +36,8 @@ function initSchema(db: Database.Database) {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         nickname TEXT,
+        emoji TEXT,
+        hasBestCombo INTEGER DEFAULT 0,
         createdAt TEXT NOT NULL DEFAULT (datetime('now')),
         updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
       );
@@ -76,6 +79,23 @@ function initSchema(db: Database.Database) {
         FOREIGN KEY (playerId) REFERENCES players(id) ON DELETE CASCADE
       );
     `)
+  } else {
+    // Migrate existing tables to add emoji column if it doesn't exist
+    try {
+      db.prepare(`
+        ALTER TABLE players ADD COLUMN emoji TEXT
+      `).run()
+    } catch (error) {
+      // Column already exists, ignore
+    }
+    // Migrate existing tables to add hasBestCombo column if it doesn't exist
+    try {
+      db.prepare(`
+        ALTER TABLE players ADD COLUMN hasBestCombo INTEGER DEFAULT 0
+      `).run()
+    } catch (error) {
+      // Column already exists, ignore
+    }
   }
 }
 
@@ -95,6 +115,8 @@ export interface Player {
   id: string
   name: string
   nickname: string | null
+  emoji: string | null
+  hasBestCombo: number
   createdAt: string
   updatedAt: string
 }

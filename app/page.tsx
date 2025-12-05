@@ -5,10 +5,10 @@ export default function Home() {
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="text-center">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 sm:text-5xl">
-          Добро пожаловать в Покер Статистику
+          Добро пожаловать в Статистику
         </h1>
         <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
-          Ведите учет игроков, сессий и статистику домашних покерных игр
+          Ведите учет игроков, сессий и статистику домашних игр
         </p>
       </div>
 

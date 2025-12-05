@@ -25,7 +25,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, nickname } = body
+    const { name, nickname, emoji } = body
 
     if (!name || name.trim() === '') {
       return NextResponse.json(
@@ -38,9 +38,9 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString()
 
     db.prepare(`
-      INSERT INTO players (id, name, nickname, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(id, name.trim(), nickname?.trim() || null, now, now)
+      INSERT INTO players (id, name, nickname, emoji, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(id, name.trim(), nickname?.trim() || null, emoji?.trim() || null, now, now)
 
     const player = db.prepare('SELECT * FROM players WHERE id = ?').get(id) as Player
 

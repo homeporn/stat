@@ -75,6 +75,7 @@ export async function GET() {
           id: player.id,
           name: player.name,
           nickname: player.nickname,
+          emoji: player.emoji,
         },
         totalBuyIns,
         totalCashOuts,

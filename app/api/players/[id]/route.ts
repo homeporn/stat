@@ -41,7 +41,7 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
-    const { name, nickname } = body
+    const { name, nickname, emoji } = body
 
     if (!name || name.trim() === '') {
       return NextResponse.json(
@@ -54,9 +54,9 @@ export async function PUT(
 
     db.prepare(`
       UPDATE players 
-      SET name = ?, nickname = ?, updatedAt = ?
+      SET name = ?, nickname = ?, emoji = ?, updatedAt = ?
       WHERE id = ?
-    `).run(name.trim(), nickname?.trim() || null, now, id)
+    `).run(name.trim(), nickname?.trim() || null, emoji?.trim() || null, now, id)
 
     const player = db.prepare('SELECT * FROM players WHERE id = ?').get(id) as Player
 
